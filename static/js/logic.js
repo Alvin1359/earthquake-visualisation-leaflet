@@ -3,7 +3,7 @@ url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojso
 
 function markerColour(mag) {
     if (mag > 5) {
-        return "##ff5050";
+        return "red";
     } else if (mag > 4) {
         return "#ff6600";
     } else if (mag > 3) {
@@ -62,6 +62,15 @@ var earthquakes = L.geoJSON(earthquakeData, {
 createMap(earthquakes);
 }
 
+function getColor(d) {
+    return  d > 5 ? "red" :
+            d > 4 ? "#ff6600" :
+            d > 3 ? "#ff9933" :
+            d > 2 ? "#ffcc00" :
+            d > 1 ? "#ffff66" :
+                    "#ccff66" ;
+}
+
 function createMap(earthquakes) {
 
 // Define lightmap layer
@@ -75,12 +84,31 @@ var lightmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{
 });
 
 // Create our map, giving it the streetmap and earthquakes layers to display on load
-L.map("map", {
+var myMap = L.map("map", {
     center: [
     39.32, -111.01
     ],
     zoom: 5,
     layers: [lightmap, earthquakes]
 });
+
+var legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'info legend'),
+        grades = [0, 1, 2, 3, 4, 5],
+        labels = [];
+
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+            '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+    }
+
+    return div;
+};
+
+legend.addTo(myMap);
 }
-  
